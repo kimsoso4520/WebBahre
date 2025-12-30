@@ -1,0 +1,58 @@
+﻿{% extends 'dashboard/base.html' %}
+
+{% block title %}داشبورد اصلی{% endblock %}
+
+{% block content %}
+    <!-- کارت خوش‌آمدگویی -->
+    <div class="welcome-card mb-5">
+        <h2 class="fw-bold">خوش آمدید، {{ user.get_full_name|default:user.username }}</h2>
+        <p class="lead mb-0">به سامانه مدیریت درخواست‌های WebBahre خوش آمدید. از منوی سمت راست گزینه مورد نظر خود را انتخاب کنید.</p>
+    </div>
+
+    <!-- کارت‌های ویژگی -->
+    <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card feature-card text-center p-4">
+                <div class="feature-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <h5>ثبت درخواست جدید</h5>
+                <p class="text-muted">درخواست‌های اداری، فنی یا مرخصی خود را ثبت کنید</p>
+                <a href="{% url 'register_request' %}" class="btn btn-primary mt-3">شروع کنید</a>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card feature-card text-center p-4">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h5>پیگیری درخواست</h5>
+                <p class="text-muted">وضعیت درخواست‌های قبلی خود را بررسی کنید</p>
+                <a href="{% url 'track_request' %}" class="btn btn-primary mt-3">پیگیری</a>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card feature-card text-center p-4">
+                <div class="feature-icon">
+                    <i class="fas fa-list-alt"></i>
+                </div>
+                <h5>لیست همه درخواست‌ها</h5>
+                <p class="text-muted">مشاهده و مدیریت تمام درخواست‌های ثبت‌شده</p>
+                <a href="{% url 'list_requests' %}" class="btn btn-primary mt-3">مشاهده</a>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card feature-card text-center p-4">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h5>دستیار هوش مصنوعی</h5>
+                <p class="text-muted">سوالات خود را از دستیار هوشمند بپرسید</p>
+                <a href="{% url 'ai_assistant' %}" class="btn btn-success mt-3">گفتگو</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
