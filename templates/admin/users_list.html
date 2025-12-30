@@ -1,141 +1,92 @@
-﻿<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>مدیریت کاربران - وب‌بهره</title>
+﻿{% extends 'admin/base_admin.html' %}
+
+{% block title %}مدیریت کاربران{% endblock %}
+
+{% block content %}
+    <h1 class="page-title text-center">مدیریت کاربران</h1>
     
-    <!-- Bootstrap 5 RTL -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <!-- آیکون‌های Bootstrap -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-    <!-- فونت فارسی زیبا (وزیر) -->
-    <link href="https://cdn.fontcdn.ir/font/vazir/Vazir.css" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Vazir', sans-serif;
-            background-color: #f8f9fa;
-        }
-        .page-title {
-            color: #2c3e50;
-            font-weight: bold;
-            margin-bottom: 30px;
-        }
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        .table th {
-            background-color: #e9ecef;
-            font-weight: bold;
-        }
-        .btn-add {
-            border-radius: 50px;
-            padding: 10px 25px;
-        }
-        .search-input {
-            border-radius: 50px;
-            padding-right: 45px;
-        }
-        .search-wrapper {
-            position: relative;
-        }
-        .search-wrapper i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }
-    </style>
-</head>
-<body>
-    <div class="container py-5">
-        <h1 class="page-title text-center">مدیریت کاربران</h1>
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">لیست کاربران سیستم</h5>
+            <a href="{% url 'users:user_create' %}" class="btn btn-light btn-add">
+                <i class="bi bi-plus-lg"></i> افزودن کاربر جدید
+            </a>
+        </div>
         
-        <div class="card">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">لیست کاربران سیستم</h5>
-                <a href="{% url 'users:user_create' %}" class="btn btn-light btn-add">
-                    <i class="bi bi-plus-lg"></i> افزودن کاربر جدید
-                </a>
-            </div>
-            
-            <div class="card-body">
-                <!-- نوار جستجو -->
-                <div class="row mb-4">
-                    <div class="col-md-6 offset-md-6">
-                        <div class="search-wrapper">
-                            <i class="bi bi-search"></i>
-                            <input type="text" class="form-control search-input" placeholder="جستجو در کاربران..." id="searchInput">
-                        </div>
+        <div class="card-body">
+            <!-- نوار جستجو -->
+            <div class="row mb-4">
+                <div class="col-md-6 offset-md-6">
+                    <div class="search-wrapper">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control search-input" placeholder="جستجو در کاربران..." id="searchInput">
                     </div>
                 </div>
-                
-                <!-- جدول کاربران -->
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
+            </div>
+            
+            <!-- جدول کاربران -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>شناسه</th>
+                            <th>نام و نام خانوادگی</th>
+                            <th>نام کاربری</th>
+                            <th>ایمیل</th>
+                            <th>نقش</th>
+                            <th>وضعیت</th>
+                            <th>تاریخ ثبت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        {% if users %}
+                            {% for user in users %}
                             <tr>
-                                <th>شناسه</th>
-                                <th>نام و نام خانوادگی</th>
-                                <th>نام کاربری</th>
-                                <th>ایمیل</th>
-                                <th>نقش</th>
-                                <th>وضعیت</th>
-                                <th>تاریخ ثبت</th>
-                                <th>عملیات</th>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ user.first_name }} {{ user.last_name }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email|default:"—" }}</td>
+                                <td>
+                                    {% if user.is_superuser %}
+                                        مدیر کل
+                                    {% elif user.is_staff %}
+                                        مدیر
+                                    {% else %}
+                                        کاربر عادی
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_active %}
+                                        <span class="badge bg-success">فعال</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">غیرفعال</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.date_joined|date:"Y/m/d" }}</td>
+                                <td>
+                                    <a href="{% url 'users:user_edit' user.id %}" class="btn btn-sm btn-outline-primary" title="ویرایش">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}" title="حذف">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody id="usersTableBody">
-                            {% if users %}
-                                {% for user in users %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ user.first_name }} {{ user.last_name }}</td>
-                                    <td>{{ user.username }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>
-                                        {% if user.is_superuser %}
-                                            مدیر کل
-                                        {% elif user.is_staff %}
-                                            مدیر
-                                        {% else %}
-                                            کاربر عادی
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if user.is_active %}
-                                            <span class="badge bg-success">فعال</span>
-                                        {% else %}
-                                            <span class="badge bg-warning text-dark">غیرفعال</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ user.date_joined|date:"Y/m/d" }}</td>
-                                    <td>
-                                        <a href="{% url 'users:user_edit' user.id %}" class="btn btn-sm btn-outline-primary" title="ویرایش">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}" title="حذف">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        هنوز هیچ کاربری ثبت نشده است.
-                                    </td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    هنوز هیچ کاربری ثبت نشده است.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
 
-                <!-- مودال‌های تأیید حذف برای همه کاربران -->
+            <!-- مودال‌های تأیید حذف -->
+            {% if users %}
                 {% for user in users %}
                 <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ user.id }}" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
@@ -169,36 +120,33 @@
                     </div>
                 </div>
                 {% endfor %}
+            {% endif %}
 
-                <!-- صفحه‌بندی ساده -->
-                {% if users.has_other_pages %}
-                <nav class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if users.has_previous %}
-                            <li class="page-item"><a class="page-link" href="?page={{ users.previous_page_number }}">قبلی</a></li>
-                        {% else %}
-                            <li class="page-item disabled"><a class="page-link" href="#">قبلی</a></li>
-                        {% endif %}
-                        
-                        <li class="page-item active"><a class="page-link" href="#">{{ users.number }}</a></li>
-                        
-                        {% if users.has_next %}
-                            <li class="page-item"><a class="page-link" href="?page={{ users.next_page_number }}">بعدی</a></li>
-                        {% else %}
-                            <li class="page-item disabled"><a class="page-link" href="#">بعدی</a></li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
-            </div>
+            <!-- صفحه‌بندی -->
+            {% if is_paginated %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link" href="#">قبلی</a></li>
+                    {% endif %}
+                    
+                    <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }}</a></li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">بعدی</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link" href="#">بعدی</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- جستجوی زنده سمت کلاینت -->
     <script>
+        // جستجوی زنده
         document.getElementById('searchInput').addEventListener('keyup', function() {
             let filter = this.value.toLowerCase();
             let rows = document.querySelectorAll('#usersTableBody tr');
@@ -209,5 +157,4 @@
             });
         });
     </script>
-</body>
-</html>
+{% endblock %}
