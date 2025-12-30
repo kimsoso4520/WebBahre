@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>پیگیری درخواست</title>
+<link rel="stylesheet" href="/static/css/Vazirmatn.css">
+<style>
+body { font-family: Vazirmatn, sans-serif; background: #eef1f4; }
+.container { max-width: 500px; margin: 60px auto; background: #fff; padding: 30px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+h2 { text-align: center; color: #0d6efd; margin-bottom: 25px; }
+input, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; }
+button { background: #0d6efd; color: #fff; border: none; cursor: pointer; }
+button:hover { background: #084298; }
+.error { color: red; text-align: center; margin-top: 10px; }
+.result { margin-top: 20px; font-size: 14px; }
+.result div { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>پیگیری درخواست</h2>
+
+<form method="post">
+<input type="text" name="request_number" placeholder="شماره درخواست">
+<button type="submit">پیگیری</button>
+</form>
+
+{% if error %}
+<div class="error">{{ error }}</div>
+{% endif %}
+
+{% if result %}
+<div class="result">
+<div><b>نام:</b> {{ result.name }}</div>
+<div><b>موبایل:</b> {{ result.mobile }}</div>
+<div><b>کد پرسنلی:</b> {{ result.personnel_code }}</div>
+<div><b>تاریخ درخواست:</b> {{ result.request_date }}</div>
+<div><b>بازه تاریخ:</b> {{ result.date_range }}</div>
+<div><b>موضوع:</b> {{ result.subject }}</div>
+<div><b>شغل:</b> {{ result.job }}</div>
+<div><b>وضعیت:</b> {{ result.status_text }}</div>
+</div>
+{% endif %}
+</div>
+
+</body>
+</html>

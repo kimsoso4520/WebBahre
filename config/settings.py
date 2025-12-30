@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'dashboard'
 
 ]
 
@@ -126,5 +127,5 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 
 LOGIN_URL = '/users/login/'
-LOGIN_REDIRECT_URL = '/users/list/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/users/login/'

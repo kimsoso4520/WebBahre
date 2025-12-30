@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>222 — انتخاب مدل داینامیک</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* {margin:0;padding:0;box-sizing:border-box;font-family:'Vazirmatn',sans-serif;}
+body {display:flex;justify-content:center;align-items:center;height:100vh;background:#0d0d2b;overflow:hidden;}
+#networkCanvas {position:fixed; top:0; left:0; width:100%; height:100%; z-index:0;}
+.model-selector {
+  position: fixed; top: 20px; right: 20px; width: 300px; padding: 22px 28px;
+  background: linear-gradient(135deg, #4a6cf7, #6c82f7); border-radius: 22px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.38); font-size: 18px; z-index: 20;
+  color: #fff; text-align: right; transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.model-selector:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 14px 40px rgba(0,0,0,0.42); }
+.model-selector label { display:block; font-weight:700; margin-bottom:10px; font-size:16px; }
+.model-selector select {
+  width:100%; padding:14px 16px; border-radius:18px; border:none; font-size:16px;
+  outline:none; background: rgba(255,255,255,0.95); color:#333; cursor:pointer; transition: all 0.3s ease;
+}
+.model-selector select.change-animate { animation: bounceScale 0.3s ease; }
+@keyframes bounceScale {0%{transform:scale(1);}50%{transform:scale(1.1);}70%{transform:scale(0.95);}100%{transform:scale(1);}}
+.chat-container {
+  position: relative; z-index: 10; display:flex; flex-direction:column;
+  width:700px; height:900px; background:#d0f0ff; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.15); overflow:hidden;
+}
+header {background: linear-gradient(135deg,#4a6cf7,#6c82f7); color:#fff; font-size:22px; font-weight:500; padding:16px 20px; text-align:center; box-shadow:0 3px 8px rgba(0,0,0,0.1);}
+#chatBox {flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; background:#f0fbff;}
+.msg {max-width:70%; padding:14px 18px; border-radius:20px; line-height:1.6; word-break:break-word;}
+.user {background:#4a90e2; color:#fff; margin-left:auto; margin-right:0; border-bottom-right-radius:4px; text-align:justify; text-align-last:right; box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+.bot {background:#fff; border:1px solid #ddd; margin-right:auto; margin-left:0; border-bottom-left-radius:4px; text-align:justify; text-align-last:left; box-shadow:0 2px 6px rgba(0,0,0,0.05);}
+.typing-container {display:flex; gap:4px; align-items:center; padding:10px 14px; border-radius:20px; background:#eee; max-width:50%; margin-right:auto;}
+.typing-dot {width:8px; height:8px; background:#999; border-radius:50%; animation:blink 1.4s infinite;}
+.typing-dot:nth-child(2){animation-delay:0.2s;} .typing-dot:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
+#inputArea{display:flex;padding:14px 16px;gap:10px;border-top:1px solid #ddd;background:#fff;}
+#msgInput{flex:1;padding:12px 16px;border-radius:24px;border:1px solid #ccc;font-size:15px;outline:none;transition:0.2s all;resize:none;overflow:hidden;}
+#msgInput:focus{border-color:#4a6cf7;box-shadow:0 0 8px rgba(74,108,247,0.2);}
+#sendBtn{padding:12px 22px;background:#4a6cf7;color:white;font-weight:500;font-size:15px;border-radius:24px;border:none;cursor:pointer;transition:0.3s all;}
+#sendBtn:hover{background:#3750c7;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+#chatBox::-webkit-scrollbar{width:6px;}#chatBox::-webkit-scrollbar-track{background:transparent;}#chatBox::-webkit-scrollbar-thumb{background-color: rgba(0,0,0,0.2); border-radius:3px;}
+.footer{text-align:center;padding:10px 0;font-size:13px;color:rgba(0,0,0,0.6);background:rgba(224,247,255,0.8);border-top:1px solid #cceeff;transition:all 0.3s ease;}
+.footer:hover{color:rgba(0,0,0,0.9);background:rgba(224,247,255,1);}
+</style>
+</head>
+<body>
+
+<canvas id="networkCanvas"></canvas>
+
+<div class="model-selector">
+  <label for="modelSelect">انتخاب مدل:</label>
+  <select id="modelSelect">
+    <option value="">در حال بارگذاری...</option>
+  </select>
+</div>
+
+<div class="chat-container">
+  <header>چت‌بات 222</header>
+  <div id="chatBox"></div>
+  <div id="inputArea">
+    <textarea id="msgInput" placeholder="پیام خود را بنویسید..." rows="2"></textarea>
+    <button id="sendBtn">ارسال</button>
+  </div>
+  <div class="footer">
+    <p>© 2025 تولید شده توسط <strong>2222</strong>. تمام حقوق محفوظ است.</p>
+  </div>
+</div>
+
+<script>
+// شبکه عصبی متحرک
+const canvas=document.getElementById("networkCanvas");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+let mouse={x:-1000,y:-1000};
+canvas.addEventListener("mousemove", e=>{mouse.x=e.clientX; mouse.y=e.clientY;});
+canvas.addEventListener("mouseleave", e=>{mouse.x=-1000; mouse.y=-1000;});
+const nodes=[];
+for(let i=0;i<100;i++){nodes.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-0.5)*1.2,vy:(Math.random()-0.5)*1.2});}
+function animateNetwork(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<nodes.length;i++){
+    const n=nodes[i];
+    const dxm=n.x-mouse.x; const dym=n.y-mouse.y;
+    const distMouse=Math.sqrt(dxm*dxm+dym*dym);
+    if(distMouse<150&&distMouse>0){
+      const force=(150-distMouse)/150*0.1;
+      n.vx+=(dxm/distMouse)*force; n.vy+=(dym/distMouse)*force;
+    }
+    n.vx+=(Math.random()-0.5)*0.12; n.vy+=(Math.random()-0.5)*0.12;
+    n.x+=n.vx; n.y+=n.vy;
+    if(n.x<0){ n.x=0; n.vx*=-1; } if(n.x>canvas.width){ n.x=canvas.width; n.vx*=-1; }
+    if(n.y<0){ n.y=0; n.vy*=-1; } if(n.y>canvas.height){ n.y=canvas.height; n.vy*=-1; }
+    n.vx*=0.99; n.vy*=0.99;
+    ctx.fillStyle="rgba(255,255,255,0.9)";
+    ctx.beginPath(); ctx.arc(n.x,n.y,2,0,Math.PI*2); ctx.fill();
+    for(let j=i+1;j<nodes.length;j++){
+      const n2=nodes[j];
+      const dx=n.x-n2.x; const dy=n.y-n2.y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<120){
+        ctx.strokeStyle="rgba(200,200,255,"+(1-dist/120)*0.7+")";
+        ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(n2.x,n2.y); ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animateNetwork);
+}
+animateNetwork();
+window.addEventListener("resize",()=>{canvas.width=window.innerWidth; canvas.height=window.innerHeight;});
+
+// Chat Logic
+const API_URL="http://localhost:8080/v1/chat/completions";
+const chatBox=document.getElementById("chatBox");
+const msgInput=document.getElementById("msgInput");
+const sendBtn=document.getElementById("sendBtn");
+const modelSelect=document.getElementById("modelSelect");
+const history=[];
+
+function addMessage(role,text){
+  const div=document.createElement("div");
+  div.className="msg "+(role==="user"?"user":"bot");
+  div.textContent=text;
+  chatBox.appendChild(div);
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function showTyping(){
+  const typingDiv=document.createElement("div");
+  typingDiv.className="typing-container"; typingDiv.id="typingIndicator";
+  typingDiv.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  chatBox.appendChild(typingDiv); chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function removeTyping(){const typingDiv=document.getElementById("typingIndicator"); if(typingDiv) typingDiv.remove();}
+function buildPayload(){return {model:modelSelect.value||"gemma-3-4b-it",messages:history.map(m=>({role:m.role,content:m.content})),max_tokens:512,temperature:0.2};}
+
+// تغییر شده: نمایش یکباره پیام بات
+async function typeBotMessage(text){
+  const div=document.createElement("div");
+  div.className="msg bot";
+  div.textContent = text;   // نمایش یکباره
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  history.push({role:"assistant",content:text});
+}
+
+async function sendMessage(){
+  const text=msgInput.value.trim(); if(!text) return;
+  addMessage("user",text); history.push({role:"user",content:text}); msgInput.value=""; autoResizeTextarea(msgInput);
+  showTyping();
+  try{
+    const response=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildPayload())});
+    removeTyping();
+    if(!response.ok){ addMessage("bot","❌ خطای سرور: "+response.status); return;}
+    const data=await response.json();
+    let output="(پاسخ نامشخص)"; if(data.choices&&data.choices[0]) output=data.choices[0].message?.content||data.choices[0].text||output;
+    await typeBotMessage(output);
+  } catch(err){removeTyping(); addMessage("bot","❌ خطا: "+err.message);}
+}
+
+msgInput.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault(); sendMessage();}});
+function autoResizeTextarea(el){el.style.height="auto"; const maxHeight=window.innerHeight/3; el.style.height=Math.min(el.scrollHeight,maxHeight)+"px";}
+msgInput.addEventListener("input",function(){autoResizeTextarea(this);});
+
+modelSelect.addEventListener("change",()=>{
+  modelSelect.classList.add("change-animate");
+  setTimeout(()=>{modelSelect.classList.remove("change-animate");},300);
+});
+
+// Load Models Dynamically
+async function fetchModels(){
+  const defaultModel = {id:"gemma-3-4b-it", name:"Gemma-3-4b-it"};
+  try{
+    const res=await fetch("http://localhost:8080/v1/models");
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const obj = await res.json();
+    const arr = obj.data || [];
+    modelSelect.innerHTML="";
+    if(arr.length===0) arr=[defaultModel];
+    arr.forEach(m=>{
+      const option=document.createElement("option");
+      option.value=m.id||m.name; option.textContent=m.name||m.id;
+      modelSelect.appendChild(option);
+    });
+  } catch(err){
+    console.warn("خطا در بارگذاری مدل‌ها، از مدل پیش‌فرض استفاده می‌شود:", err);
+    modelSelect.innerHTML="";
+    const option=document.createElement("option");
+    option.value=defaultModel.id;
+    option.textContent=defaultModel.name;
+    modelSelect.appendChild(option);
+  }
+}
+
+// DOM Loaded
+document.addEventListener("DOMContentLoaded", ()=>{
+  fetchModels();
+  const welcomeText="سلام! دستیار هوش مصنوعی در خدمت شما هست.";
+  addMessage("bot", welcomeText);
+});
+</script>
+
+</body>
+</html>

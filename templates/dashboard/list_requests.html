@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>لیست درخواست‌ها</title>
+<link rel="stylesheet" href="/static/css/Vazirmatn.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Vazirmatn, sans-serif; background: #f8f9fa; color: #333; padding: 20px; }
+a { text-decoration: none; }
+h2 { text-align: center; color: #0d6efd; margin-bottom: 30px; font-size: 2em; }
+
+.filter-box { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 30px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.filter-box input[type="text"] { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; width: 220px; transition: 0.3s; }
+.filter-box input[type="text"]:focus { border-color: #0d6efd; box-shadow: 0 0 8px rgba(13,110,253,0.3); outline: none; }
+.filter-box button, .filter-box .clear-btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.filter-box button { background: #0d6efd; color: #fff; }
+.filter-box button:hover { background: #0056b3; }
+.filter-box .clear-btn { background: #6c757d; color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+.filter-box .clear-btn:hover { background: #495057; }
+
+table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); background: #fff; }
+th, td { padding: 14px 12px; text-align: center; font-size: 0.95em; }
+th { background: linear-gradient(90deg, #0d6efd, #0056b3); color: #fff; font-weight: 600; }
+tr:nth-child(even) { background: #f1f3f5; }
+tr:hover { background: #e7f0ff; transition: 0.3s; }
+td { color: #495057; }
+
+/* وضعیت درخواست */
+.status-processing { color: #ffc107; font-weight: bold; } /* زرد */
+.status-completed { color: #28a745; font-weight: bold; } /* سبز */
+.status-canceled { color: #dc3545; font-weight: bold; }  /* قرمز */
+
+.pagination { margin: 25px 0; text-align: center; font-size: 0.95em; }
+.pagination a { margin: 0 6px; padding: 8px 16px; background: #0d6efd; color: #fff; border-radius: 8px; transition: 0.3s; display: inline-block; }
+.pagination a:hover:not(.disabled) { background: #0056b3; }
+.pagination a.disabled { background: #ccc; pointer-events: none; color: #fff; }
+
+.back-menu { display: inline-block; margin-top: 25px; padding: 10px 20px; background: #6c757d; color: #fff; border-radius: 8px; transition: 0.3s; font-weight: bold; }
+.back-menu:hover { background: #495057; }
+
+@media (max-width: 1024px) { .filter-box input[type="text"] { width: 180px; } th, td { padding: 12px 8px; } }
+@media (max-width: 768px) { .filter-box { flex-direction: column; align-items: stretch; } .filter-box input[type="text"] { width: 100%; } table, th, td { font-size: 0.85em; } }
+@media (max-width: 480px) { h2 { font-size: 1.5em; } .filter-box button, .filter-box .clear-btn { width: 100%; } }
+</style>
+</head>
+<body>
+
+<h2>لیست درخواست‌ها</h2>
+
+<form method="get" class="filter-box">
+    <input type="text" name="search_name" placeholder="نام" value="{{ search_name }}">
+    <input type="text" name="search_mobile" placeholder="موبایل" value="{{ search_mobile }}">
+    <input type="text" name="search_request" placeholder="شماره درخواست" value="{{ search_request }}">
+    <input type="text" name="search_code" placeholder="کد پرسنلی" value="{{ search_code }}">
+    <button type="submit">جستجو</button>
+    <a href="{{ url_for('list_requests') }}" class="clear-btn">پاک کردن فیلترها</a>
+</form>
+
+<table>
+<thead>
+<tr>
+<th>شماره درخواست</th>
+<th>نام</th>
+<th>موبایل</th>
+<th>کد پرسنلی</th>
+<th>تاریخ درخواست</th>
+<th>بازه تاریخ</th>
+<th>موضوع</th>
+<th>شغل</th>
+<th>وضعیت</th>
+</tr>
+</thead>
+<tbody>
+{% for req in requests %}
+<tr>
+<td>{{ req.request_number }}</td>
+<td>{{ req.name }}</td>
+<td>{{ req.mobile }}</td>
+<td>{{ req.personnel_code }}</td>
+<td>{{ req.request_date }}</td>
+<td>{{ req.date_range }}</td>
+<td>{{ req.subject }}</td>
+<td>{{ req.job }}</td>
+<td class="{% if req.status_text == 'درحال پردازش' %}status-processing{% elif req.status_text == 'پردازش شده' %}status-completed{% elif req.status_text == 'کنسل شده' %}status-canceled{% endif %}">
+    {{ req.status_text }}
+</td>
+</tr>
+{% endfor %}
+{% if requests|length == 0 %}
+<tr><td colspan="9">هیچ درخواستی یافت نشد</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<div class="pagination">
+{% if page > 1 %}
+<a href="?page={{ page-1 }}&search_name={{ search_name }}&search_mobile={{ search_mobile }}&search_request={{ search_request }}&search_code={{ search_code }}">⬅️ قبلی</a>
+{% else %}
+<a class="disabled">⬅️ قبلی</a>
+{% endif %}
+صفحه {{ page }} از {{ total_pages }}
+{% if page < total_pages %}
+<a href="?page={{ page+1 }}&search_name={{ search_name }}&search_mobile={{ search_mobile }}&search_request={{ search_request }}&search_code={{ search_code }}">بعدی ➡️</a>
+{% else %}
+<a class="disabled">بعدی ➡️</a>
+{% endif %}
+</div>
+
+<a class="back-menu" href="{{ url_for('menu') }}">⬅️ بازگشت به منوی اصلی</a>
+
+</body>
+</html>
