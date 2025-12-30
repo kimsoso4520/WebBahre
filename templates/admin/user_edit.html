@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ویرایش کاربر - وب‌بهره</title>
+    
+    <!-- Bootstrap 5 RTL -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- آیکون‌های Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- فونت فارسی وزیر -->
+    <link href="https://cdn.fontcdn.ir/font/vazir/Vazir.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Vazir', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .page-title {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        .btn-submit {
+            border-radius: 50px;
+            padding: 12px 40px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <h1 class="page-title text-center">ویرایش کاربر: {{ user.get_full_name|default:user.username }}</h1>
+                
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">فرم ویرایش اطلاعات کاربر</h5>
+                    </div>
+                    <div class="card-body p-5">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">نام<small class="text-danger"> *</small></label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">نام خانوادگی<small class="text-danger"> *</small></label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">نام کاربری<small class="text-danger"> *</small></label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">ایمیل</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">تغییر رمز عبور (اختیاری)</label>
+                                <small class="text-muted">اگر خالی بماند، رمز قبلی حفظ می‌شود.</small>
+                                {{ form.password1 }}
+                                {{ form.password2 }}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">نقش کاربر</label>
+                                <div class="form-check">
+                                    {{ form.is_staff }}
+                                    <label class="form-check-label">دسترسی مدیریتی (staff)</label>
+                                </div>
+                                <div class="form-check">
+                                    {{ form.is_superuser }}
+                                    <label class="form-check-label">مدیر کل (superuser)</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label">کاربر فعال باشد</label>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid d-md-flex justify-content-md-between">
+                                <a href="{% url 'users:users_list' %}" class="btn btn-outline-secondary btn-lg mt-3">
+                                    <i class="bi bi-arrow-right"></i> بازگشت به لیست
+                                </a>
+                                <button type="submit" class="btn btn-warning btn-submit mt-3 text-white">
+                                    <i class="bi bi-save"></i> ذخیره تغییرات
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.querySelectorAll('input, select').forEach(el => {
+            el.classList.add('form-control');
+        });
+        document.querySelectorAll('.form-check-input').forEach(el => {
+            el.classList.remove('form-control');
+        });
+    </script>
+</body>
+</html>
